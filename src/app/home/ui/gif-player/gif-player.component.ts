@@ -2,6 +2,7 @@ import {Component, computed, effect, ElementRef, Input, signal, ViewChild} from 
 import {takeUntilDestroyed, toObservable} from "@angular/core/rxjs-interop";
 import {combineLatest, EMPTY, filter, fromEvent, Subject, switchMap} from "rxjs";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import {NgStyle} from "@angular/common";
 
 interface GifPlayerState {
   playing: boolean;
@@ -12,13 +13,23 @@ interface GifPlayerState {
   selector: 'app-gif-player',
   standalone: true,
   imports: [
-    MatProgressSpinner
+    MatProgressSpinner,
+    NgStyle
   ],
   template: `
     @if (status() === 'loading'){
       <mat-progress-spinner mode="indeterminate" diameter="50" />
     }
-    <div>
+    <div
+      [style.background]="'url(' + thumbnail + ') 50% 50% / cover no-repeat'"
+      [ngStyle]="status() !== 'loaded' &&
+        !['/assets/nsfw.png', '/assets/default.png'].includes(thumbnail)
+          ? {
+              filter: 'blur(10px) brightness(0.6)',
+              transform: 'scale(1.1)'
+            }
+          : {}"
+      class="preload-background">
       <video
         (click)="togglePlay$.next()"
         #gifPlayer
